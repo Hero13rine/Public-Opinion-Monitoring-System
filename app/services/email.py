@@ -51,3 +51,36 @@ def send_alert_email(sensitive_words, weibo_text, username, url, recipients=None
     except Exception as e:
         logging.error(f"发送邮件失败: {e}")
         raise e
+
+
+def handle_alert(alert_level, sensitive_words, weibo_comment, current_app):
+    """
+    根据警报等级和设定的阈值，判断是否发送警报邮件。
+
+    参数：
+        alert_level (str): 当前微博评论的危险等级（如：'常态', '较大', '重大', '特别重大'）。
+        sensitive_words (list): 检测到的敏感词列表。
+        weibo_comment (object): 微博评论对象，需包含text、username和url属性。
+        current_app (object): 当前应用实例，用于获取配置参数。
+
+    返回：
+        bool: 如果发送了警报邮件，返回True；否则返回False。
+    """
+    # 获取配置中的阈值等级，默认为'重大'
+    threshold = current_app.config.get('THRESHOLD', '重大')
+
+    # 定义危险等级顺序
+    levels = ['常态', '较大', '重大', '特别重大']
+
+    # 判断当前警报等级是否达到或超过阈值
+    if levels.index(alert_level) >= levels.index(threshold):
+        # 发送警报邮件
+        send_alert_email(
+            sensitive_words=sensitive_words,
+            weibo_text=weibo_comment.text,
+            username=weibo_comment.username,
+            url=weibo_comment.url
+        )
+        return True
+
+    return False

@@ -120,7 +120,7 @@
     <!-- DataTables -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-
+    <!--表格的折叠和查找-->
     <script>
         // 初始化 DataTables
         $(document).ready(function() {
@@ -141,6 +141,71 @@
             });
         });
     </script>
+    <!--自动化脚本-->
+    <script>
+        let isRunning = false;
+        let intervalId;
+
+        // 更新状态信息
+        function updateStatus(message, type = 'text-muted') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = type;
+            statusDiv.textContent = `状态：${message}`;
+        }
+
+        // 自动化分析逻辑
+        async function automateAnalysis() {
+            try {
+                const response = await fetch('/automate', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                console.log('分析结果:', data);
+                if (data.message === "没有未分析的评论") {
+                    updateStatus('没有未分析的评论', 'text-warning');
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('分析失败:', error);
+                updateStatus('分析失败', 'text-danger');
+                return false;
+            }
+        }
+
+        // 开始分析
+        document.getElementById('startAnalysis').addEventListener('click', () => {
+            if (isRunning) return;
+
+            isRunning = true;
+            document.getElementById('startAnalysis').disabled = true;
+            document.getElementById('stopAnalysis').disabled = false;
+            updateStatus('分析中...', 'text-primary');
+
+            intervalId = setInterval(async () => {
+                const hasData = await automateAnalysis();
+                if (!hasData) {
+                    clearInterval(intervalId);
+                    updateStatus('分析完成', 'text-success');
+                    document.getElementById('startAnalysis').disabled = false;
+                    document.getElementById('stopAnalysis').disabled = true;
+                    isRunning = false;
+                }
+            }, 2000); // 每2秒检查一次
+        });
+
+        // 停止分析
+        document.getElementById('stopAnalysis').addEventListener('click', () => {
+            if (!isRunning) return;
+
+            clearInterval(intervalId);
+            updateStatus('分析已停止', 'text-warning');
+            document.getElementById('startAnalysis').disabled = false;
+            document.getElementById('stopAnalysis').disabled = true;
+            isRunning = false;
+        });
+    </script>
+
 
 </body>
 </html>

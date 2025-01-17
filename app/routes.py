@@ -1,10 +1,15 @@
-from flask import Blueprint, render_template, request, redirect, url_for, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify
 from .models import db, WeiboComment, AnalysisResult
 from .services.spider import Spider
 from .services.evaluation import evaluate_weibo_content
-from .services.email import send_alert_email
+from .services.email import handle_alert
 import re
 from sqlalchemy import func
+from threading import Event
+from time import sleep
+import json
+from datetime import datetime
+
 bp = Blueprint('routes', __name__)
 
 @bp.route('/')
@@ -47,15 +52,7 @@ def analyze_comments():
     db.session.commit()
 
     # 获取阈值并判断是否发送邮件
-    threshold = current_app.config.get('THRESHOLD', '重大')
-    levels = ['常态', '较大', '重大', '特别重大']  # 危险等级的顺序
-    if levels.index(alert_level) >= levels.index(threshold):
-        send_alert_email(
-            sensitive_words=sensitive_words,
-            weibo_text=weibo_comment.text,
-            username=weibo_comment.username,
-            url=weibo_comment.url
-        )
+    handle_alert(alert_level, sensitive_words, weibo_comment, current_app)
 
     return redirect(url_for('routes.index'))
 
@@ -93,8 +90,10 @@ def fetch_comments():
             weibo_id=comment['url'].split('/')[-1],  # 假设从 URL 提取微博 ID
             text=comment['text'],
             url=comment['url'],
-            username=comment['username']
+            username=comment['username'],
+            created_at=comment['created_at']
         )
+
         db.session.add(weibo_comment)
         db.session.commit()
 
@@ -114,8 +113,7 @@ def fetch_comments():
         db.session.commit()
 
         # 如果需要，发送邮件预警
-        if alert_level in ['重大', '特别重大']:
-            send_alert_email(sensitive_words, comment['text'])
+        handle_alert(alert_level, sensitive_words, weibo_comment, current_app)
 
     return redirect(url_for('routes.index'))
 
@@ -158,3 +156,67 @@ def stats():
     }
 
     return render_template('stats.html', stats=stats_data)
+
+# 从数据库中接取然后分析
+
+# 用于控制自动化分析的运行状态
+stop_event = Event()
+
+@bp.route('/automate', methods=['POST'])
+def automate_analysis():
+    """
+    持续分析未处理的评论，直到手动停止。
+    """
+    # 提取触发动作（开始或停止）
+    action = request.json.get('action', 'start')
+
+    if action == 'stop':
+        # 停止分析任务
+        stop_event.set()
+        return jsonify({"message": "分析已停止"})
+
+    # 重置停止标志
+    stop_event.clear()
+
+    while not stop_event.is_set():
+        # 查找一条未分析的评论
+        comment = WeiboComment.query.filter_by(analyzed=False).first()
+
+        if not comment:
+            # 如果没有未分析的评论，等待新的数据
+            print("没有未分析的评论，等待中...")
+            sleep(5)  # 等待 5 秒再检查
+            continue
+
+        # 调用分析逻辑
+        # 调用敏感性分析逻辑
+        sensitive_words = evaluate_weibo_content(comment.text)
+
+        # 根据分析结果确定危险等级
+        if sensitive_words:
+            alert_level = max(word['level'] for word in sensitive_words)
+        else:
+            alert_level = "常态"
+
+        # 保存分析结果到分析表
+        analysis_result = AnalysisResult(
+            comment_id=comment.id,
+            sensitive_words=json.dumps(sensitive_words),
+            alert_level=alert_level,
+            created_at=comment.created_at
+        )
+
+        db.session.add(analysis_result)
+
+        # 标记评论为已分析
+        comment.analyzed = True
+
+        # 提交数据库更改
+        db.session.commit()
+
+        # 如果分析结果达到某个等级，则发送邮件提醒
+        handle_alert(alert_level, sensitive_words, comment, current_app)
+
+        print(f"评论 {comment.id} 已分析: {alert_level}")
+
+    return jsonify({"message": "分析任务已启动"})

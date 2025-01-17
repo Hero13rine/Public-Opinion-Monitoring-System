@@ -67,16 +67,16 @@
             {
                 type: 'pie',
                 data: {
-                    labels: ['低', '中', '重大', '特别重大'],
+                    labels: ['常态', '较大', '重大', '特别重大'],
                     datasets: [{
                         label: '危险等级分布',
                         data: [
-                            {{ stats.level_counts['低'] }},
-                            {{ stats.level_counts['中'] }},
+                            {{ stats.level_counts['常态'] }},
+                            {{ stats.level_counts['较大'] }},
                             {{ stats.level_counts['重大'] }},
                             {{ stats.level_counts['特别重大'] }}
                         ],
-                        backgroundColor: ['#d4edda', '#f8d7da', '#ffeeba', '#f5c6cb'],
+                        backgroundColor: ['#d4edda', '#B2FFFF', '#fff3cd', '#f8d7da'],
                         hoverOffset: 4
                     }]
                 }
@@ -89,19 +89,19 @@
         {
             type: 'line',
             data: {
-                labels: {{ stats.time_series['低'].dates | tojson | default([]) }},
+                labels: {{ stats.time_series['常态'].dates | tojson | default([]) }},
                 datasets: [
                     {
-                        label: '低',
-                        data: {{ stats.time_series['低'].counts | tojson | default([]) }},
+                        label: '常态',
+                        data: {{ stats.time_series['常态'].counts | tojson | default([]) }},
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
                         tension: 0.1,
                         fill: true
                     },
                     {
-                        label: '中',
-                        data: {{ stats.time_series['中'].counts | tojson | default([]) }},
+                        label: '较大',
+                        data: {{ stats.time_series['较大'].counts | tojson | default([]) }},
                         borderColor: '#ffc107',
                         backgroundColor: 'rgba(255, 193, 7, 0.1)',
                         tension: 0.1,

@@ -1,7 +1,7 @@
 import logging
 
 class Config:
-    # SECRET_KEY = 'HKUwVx9AynykcyKh'
+    # 添加邮箱smtp服务密钥
     MAIL_SERVER = 'smtp.163.com'
     MAIL_PORT = 465
     MAIL_USE_SSL = True

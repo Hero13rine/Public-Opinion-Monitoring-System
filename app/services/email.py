@@ -20,6 +20,8 @@ def send_alert_email(sensitive_words, weibo_text, username, url, recipients=None
         # 使用 Flask 当前应用上下文发送邮件
         with current_app.app_context():
             # 默认收件人
+            recipients = current_app.config.get("MAIL_DEFAULT_Recipients")
+
             if not recipients:
                 recipients = [current_app.config.get("MAIL_DEFAULT_SENDER")]
 

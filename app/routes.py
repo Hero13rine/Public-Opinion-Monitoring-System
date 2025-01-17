@@ -222,7 +222,7 @@ def automate_analysis():
         # 保存分析结果到分析表
         analysis_result = AnalysisResult(
             comment_id=comment.id,
-            sensitive_words=json.dumps(sensitive_words, ensure_ascii=False),
+            sensitive_words=sensitive_words,
             alert_level=alert_level,
             created_at=comment.created_at
         )
@@ -241,3 +241,4 @@ def automate_analysis():
         print(f"评论 {comment.id} 已分析: {alert_level}")
 
     return jsonify({"message": "分析任务已启动"})
+

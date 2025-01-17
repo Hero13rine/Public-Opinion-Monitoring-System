@@ -66,7 +66,7 @@ def insert_comments_to_db(comments):
 def main():
     # 生成测试评论
     prompt = "生成微博评论"
-    comments = generate_test_comments(num_comments=10)
+    comments = generate_test_comments(num_comments=1)
     if not comments:
         print("没有生成有效的评论")
         return

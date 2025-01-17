@@ -8,7 +8,7 @@ class WeiboComment(db.Model):
     url = db.Column(db.String(255), nullable=False)  # 新增：微博的定位网址
     username = db.Column(db.String(64), nullable=False)  # 新增：用户名
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-
+    analyzed = db.Column(db.Boolean, default=False)  # 是否已检测，默认未检测
 class AnalysisResult(db.Model):
     __tablename__ = 'analysis_results'
     id = db.Column(db.Integer, primary_key=True)

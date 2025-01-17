@@ -8,7 +8,7 @@ A Flask-based web application designed to evaluate sensitive content in text, cl
 
 - **Content Analysis**: Automatically evaluate text for sensitive words and classify their risk levels (e.g., Normal, Moderate, Major, Critical).
 - **Email Notifications**: Sends real-time email alerts for sensitive content exceeding the defined risk threshold.
-- **Database Integration**: Manages comments and analysis results with a MySQL database.
+- **Database Integration**: Manages comments and analysis results with a MySQL database run database.sql.
 - **Real-Time Controls**: Start and stop analysis dynamically through a user-friendly interface.
 - **Configurable Risk Thresholds**: Easily adjust alert levels via the frontend.
 - **Visualization**: Tabular views and dynamic charts for data visualization.

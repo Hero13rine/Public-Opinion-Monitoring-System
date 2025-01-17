@@ -5,10 +5,10 @@ class Config:
     MAIL_SERVER = 'smtp.163.com'
     MAIL_PORT = 465
     MAIL_USE_SSL = True
-    MAIL_USERNAME = 'liuzhikaisau@163.com'
-    MAIL_PASSWORD = 'HKUwVx9AynykcyKh'
-    MAIL_DEFAULT_SENDER = 'liuzhikaisau@163.com'
-    MAIL_DEFAULT_RECIPIENT = 'herobrineLiu@outlook.com'
+    MAIL_USERNAME = '*********'
+    MAIL_PASSWORD = '*********'
+    MAIL_DEFAULT_SENDER = '*********'
+    MAIL_DEFAULT_RECIPIENT = '*********'
     # 添加数据库配置
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:root@127.0.0.1:3308/weibo_analysis'
     SQLALCHEMY_TRACK_MODIFICATIONS = False

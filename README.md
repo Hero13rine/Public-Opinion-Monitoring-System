@@ -28,8 +28,9 @@ A Flask-based web application designed to evaluate sensitive content in text, cl
 
 1. **Clone the repository**
    ```bash
-   git clone <repository_url>
-   cd <repository_name>
+   git clone https://github.com/Hero13rine/Public-Opinion-Monitoring-System.git
+   cd Public-Opinion-Monitoring-System
+
    ```
 
 2. **Install dependencies**

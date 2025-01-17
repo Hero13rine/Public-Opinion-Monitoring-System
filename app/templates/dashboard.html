@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评论分析系统</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables -->
+    <link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-light">
+
+    <!-- 主页面内容 -->
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">舆情分析系统</h1>
+
+        <!-- 查看统计信息按钮 -->
+        <div class="text-end mb-3">
+            <a href="{{ url_for('routes.stats') }}" class="btn btn-info">查看统计信息</a>
+        </div>
+
+        <!-- 提交评论表单 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4>提交评论</h4>
+                <form action="/analyze" method="POST">
+                    <div class="mb-3">
+                        <label for="text" class="form-label">输入微博评论内容</label>
+                        <textarea name="text" id="text" rows="3" class="form-control" placeholder="输入评论内容..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">提交并分析</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 显示分析结果 -->
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <table id="analysisTable" class="table table-hover table-striped table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center">ID</th>
+                            <th class="text-center">用户名</th>
+                            <th class="text-center">评论内容</th>
+                            <th class="text-center">敏感词</th>
+                            <th class="text-center">危险等级</th>
+                            <th class="text-center">微博链接</th>
+                            <th class="text-center">时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr class="table-{{ 'danger' if result.alert_level == '特别重大' else 'warning' if result.alert_level == '重大' else 'secondary' if result.alert_level == '中' else 'light' }}">
+                            <td class="text-center">{{ result.id }}</td>
+                            <td class="text-center">{{ result.comment.username }}</td>
+                            <td class="text-center text-truncate" style="max-width: 150px;">
+                                {{ result.comment.text }}
+                            </td>
+                            <td class="text-center">
+                                <ul class="list-unstyled">
+                                    {% for word in result.sensitive_words %}
+                                    <li>{{ word.word }} (等级: {{ word.level }})</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="text-center">{{ result.alert_level }}</td>
+                            <td class="text-center">
+                                <a href="{{ result.comment.url }}" target="_blank" class="btn btn-link">
+                                    查看微博
+                                </a>
+                            </td>
+                            <td class="text-center">{{ result.created_at }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 设置预警等级阈值 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4>设置预警等级阈值</h4>
+                <form action="/set_threshold" method="POST" class="d-flex align-items-center">
+                    <select name="threshold" id="threshold" class="form-select w-auto me-2">
+                        <option value="常态" {% if threshold == "常态" %}selected{% endif %}>常态</option>
+                        <option value="较大" {% if threshold == "较大" %}selected{% endif %}>较大</option>
+                        <option value="重大" {% if threshold == "重大" %}selected{% endif %}>重大</option>
+                        <option value="特别重大" {% if threshold == "特别重大" %}selected{% endif %}>特别重大</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">更新阈值</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 自动化控制台 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4>自动化分析控制台</h4>
+                <div class="d-flex align-items-center">
+                    <button id="startAnalysis" class="btn btn-success me-2">开始分析</button>
+                    <button id="stopAnalysis" class="btn btn-danger" disabled>停止分析</button>
+                    <div id="status" class="ms-3 text-muted">状态：未启动</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        // 初始化 DataTables
+        $(document).ready(function() {
+            $('#analysisTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                responsive: true,
+                language: {
+                    search: "查找:",
+                    lengthMenu: "每页显示 _MENU_ 条记录",
+                    info: "显示第 _START_ 至 _END_ 项记录，共 _TOTAL_ 项",
+                    paginate: {
+                        previous: "上一页",
+                        next: "下一页"
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

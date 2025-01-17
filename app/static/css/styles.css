@@ -1,0 +1,145 @@
+/* 全局样式 */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa; /* 浅灰背景 */
+    margin: 0;
+    padding: 0;
+}
+
+/* 标题样式 */
+h1 {
+    color: #007bff; /* 蓝色标题 */
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* 加载动画 */
+#loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9); /* 白色半透明背景 */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 主内容默认隐藏 */
+#content {
+    display: none;
+}
+
+/* 卡片样式 */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+    margin-bottom: 20px;
+}
+
+/* 表格样式 */
+table {
+    border-radius: 10px;
+    overflow: hidden; /* 防止圆角部分溢出 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 表格阴影 */
+}
+
+thead.table-dark {
+    background: linear-gradient(90deg, #343a40, #6c757d); /* 渐变背景 */
+    color: #ffffff; /* 白色字体 */
+    text-transform: uppercase; /* 全部大写 */
+}
+
+/* 表格悬停高亮 */
+table.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1); /* 浅蓝背景 */
+    transform: scale(1.01); /* 微缩放效果 */
+    transition: all 0.2s ease-in-out;
+}
+
+/* 按钮样式 */
+.btn {
+    border-radius: 20px; /* 圆角按钮 */
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-2px); /* 悬停时微微上移 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 增强按钮阴影 */
+}
+
+/* 表格中的链接按钮 */
+.btn-link {
+    color: #007bff; /* 蓝色 */
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+/* 敏感词列表 */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px; /* 限制最大宽度 */
+}
+
+/* 阈值选择表单 */
+form .form-select {
+    border-radius: 10px; /* 圆角下拉框 */
+}
+
+/* 模态框样式 */
+.modal-header {
+    background-color: #007bff;
+    color: #ffffff;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef;
+}
+
+.modal-content {
+    border-radius: 10px; /* 圆角模态框 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影 */
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .text-truncate {
+        max-width: 150px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* 配色方案 */
+.table-danger {
+    background-color: #f8d7da !important; /* 特别重大：红色背景 */
+}
+
+.table-warning {
+    background-color: #fff3cd !important; /* 重大：黄色背景 */
+}
+
+.table-secondary {
+    background-color: #B2FFFF !important; /* 中：蓝色背景 */
+}
+
+.table-light {
+    background-color: #fefefe !important; /* 常态：白色背景 */
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析详情</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">分析详情</h1>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4>评论内容</h4>
+                <p>{{ result.comment.text }}</p>
+
+                <h4>模型输出</h4>
+                <pre>{{ result.sensitive_words | tojson(indent=2) }}</pre>
+
+                <h4>危险等级</h4>
+                <p class="text-{{ 'danger' if result.alert_level == '特别重大' else 'warning' if result.alert_level == '重大' else 'secondary' if result.alert_level == '中' else 'light' }}">
+                    {{ result.alert_level }}
+                </p>
+
+                <h4>微博链接</h4>
+                <a href="{{ result.comment.url }}" target="_blank">{{ result.comment.url }}</a>
+
+                <h4>时间</h4>
+                <p>{{ result.created_at }}</p>
+
+                <a href="{{ url_for('routes.index') }}" class="btn btn-secondary mt-3">返回列表</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

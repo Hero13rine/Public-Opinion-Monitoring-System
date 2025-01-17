@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级统计信息</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">高级统计信息</h1>
+
+        <!-- 图表区域 -->
+        <div class="row">
+            <!-- 危险等级饼状图 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="text-center">危险等级分布</h4>
+                        <canvas id="levelPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 按时间分析折线图 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="text-center">评论数量（按时间）</h4>
+                        <canvas id="timeLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 总统计数据 -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="text-center">总评论数</h4>
+                        <p class="display-6 text-center">{{ stats.total_comments }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="text-center">敏感词总数</h4>
+                        <p class="display-6 text-center">{{ stats.total_sensitive_words }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('routes.index') }}" class="btn btn-secondary">返回首页</a>
+        </div>
+    </div>
+
+    <!-- Chart.js 初始化 -->
+    <script>
+        // 饼状图：危险等级分布
+        const levelPieChart = new Chart(
+            document.getElementById('levelPieChart'),
+            {
+                type: 'pie',
+                data: {
+                    labels: ['低', '中', '重大', '特别重大'],
+                    datasets: [{
+                        label: '危险等级分布',
+                        data: [
+                            {{ stats.level_counts['低'] }},
+                            {{ stats.level_counts['中'] }},
+                            {{ stats.level_counts['重大'] }},
+                            {{ stats.level_counts['特别重大'] }}
+                        ],
+                        backgroundColor: ['#d4edda', '#f8d7da', '#ffeeba', '#f5c6cb'],
+                        hoverOffset: 4
+                    }]
+                }
+            }
+        );
+
+        // 折线图：按时间统计
+        const timeLineChart = new Chart(
+        document.getElementById('timeLineChart'),
+        {
+            type: 'line',
+            data: {
+                labels: {{ stats.time_series['低'].dates | tojson | default([]) }},
+                datasets: [
+                    {
+                        label: '低',
+                        data: {{ stats.time_series['低'].counts | tojson | default([]) }},
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: '中',
+                        data: {{ stats.time_series['中'].counts | tojson | default([]) }},
+                        borderColor: '#ffc107',
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: '重大',
+                        data: {{ stats.time_series['重大'].counts | tojson | default([]) }},
+                        borderColor: '#fd7e14',
+                        backgroundColor: 'rgba(253, 126, 20, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: '特别重大',
+                        data: {{ stats.time_series['特别重大'].counts | tojson | default([]) }},
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: '日期'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '评论数量'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -6,7 +6,7 @@ from .services.email import handle_alert
 import re
 from sqlalchemy import func
 from threading import Event
-from time import sleep
+from time import sleep, time
 import json
 from datetime import datetime
 
@@ -49,6 +49,7 @@ def analyze_comments():
         alert_level=alert_level
     )
     db.session.add(analysis_result)
+    weibo_comment.analyzed = True
     db.session.commit()
 
     # 获取阈值并判断是否发送邮件
@@ -177,14 +178,19 @@ def automate_analysis():
 
     # 重置停止标志
     stop_event.clear()
-
+    last_log_time = 0  # 上一次日志输出的时间
+    log_interval = 600  # 日志输出间隔，单位：秒
     while not stop_event.is_set():
         # 查找一条未分析的评论
         comment = WeiboComment.query.filter_by(analyzed=False).first()
 
         if not comment:
             # 如果没有未分析的评论，等待新的数据
-            print("没有未分析的评论，等待中...")
+            current_time = time()
+            if current_time - last_log_time > log_interval:
+                print("没有未分析的评论，等待中...")
+                last_log_time = current_time
+
             sleep(5)  # 等待 5 秒再检查
             continue
 

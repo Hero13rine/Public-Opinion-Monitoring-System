@@ -158,8 +158,18 @@ def stats():
 
     return render_template('stats.html', stats=stats_data)
 
-# 从数据库中接取然后分析
 
+@bp.route('/automate/status', methods=['GET'])
+def check_status():
+    """
+    返回分析任务的当前状态。
+    """
+    if stop_event.is_set():
+        return jsonify({"status": "stopped"})
+    return jsonify({"status": "running"})
+
+
+# 从数据库中接取然后分析
 # 用于控制自动化分析的运行状态
 stop_event = Event()
 
@@ -191,7 +201,12 @@ def automate_analysis():
                 print("没有未分析的评论，等待中...")
                 last_log_time = current_time
 
-            sleep(5)  # 等待 5 秒再检查
+            # 等待期间检查是否收到停止信号
+            for _ in range(5):  # 每秒检查一次，最多等待 5 秒
+                if stop_event.is_set():
+                    print("收到停止信号，退出等待...")
+                    break
+                sleep(1)  # 每次等待 1 秒
             continue
 
         # 调用分析逻辑
@@ -207,7 +222,7 @@ def automate_analysis():
         # 保存分析结果到分析表
         analysis_result = AnalysisResult(
             comment_id=comment.id,
-            sensitive_words=json.dumps(sensitive_words),
+            sensitive_words=json.dumps(sensitive_words, ensure_ascii=False),
             alert_level=alert_level,
             created_at=comment.created_at
         )
